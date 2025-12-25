@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Output files (keep sample)
+outputs/*.mp4
+outputs/*.json
+!outputs/annotated_sample_output.mp4
+!outputs/.gitkeep
+
+# Temporary files
+*.tmp
+*.log
+test_response.json
+demo_results.json
+
+# Model files (large, should be downloaded)
+# models/*.pt
+
+# Test cache
+.pytest_cache/
+.coverage
+htmlcov/
+
