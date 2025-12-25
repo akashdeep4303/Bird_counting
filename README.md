@@ -177,136 +177,136 @@ See `sample_response.json` for complete response structure.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    VIDEO INPUT PROCESSING                        │
+│                    VIDEO INPUT PROCESSING                       │
 └────────────────────────────┬────────────────────────────────────┘
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                    FRAME EXTRACTION                              │
+│                    FRAME EXTRACTION                             │
 │  • Read video frame by frame                                    │
 │  • Sample frames based on fps_sample (default: 15 FPS)          │
-│  • Extract frame metadata (timestamp, frame number)              │
+│  • Extract frame metadata (timestamp, frame number)             │
 └────────────────────────────┬────────────────────────────────────┘
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │              FRAME PREPROCESSING & ENHANCEMENT                  │
-│  ┌──────────────────────────────────────────────────────────┐ │
-│  │ 1. Convert BGR → LAB color space                          │ │
-│  │ 2. Extract L (luminance) channel                          │ │
-│  │ 3. Apply CLAHE (Contrast Limited Adaptive Histogram        │ │
-│  │    Equalization) with clipLimit=2.0, tileGridSize=(8,8) │ │
-│  │ 4. Merge enhanced L channel with original A, B channels   │ │
-│  │ 5. Convert LAB → BGR                                       │ │
-│  │ 6. Apply sharpening kernel:                                │ │
-│  │    [[-1, -1, -1],                                         │ │
-│  │     [-1,  9, -1],                                         │ │
-│  │     [-1, -1, -1]]                                         │ │
-│  │ 7. Blend: 70% sharpened + 30% enhanced                   │ │
-│  └──────────────────────────────────────────────────────────┘ │
+│  ┌──────────────────────────────────────────────────────────┐   │
+│  │ 1. Convert BGR → LAB color space                         │   │
+│  │ 2. Extract L (luminance) channel                         │   │
+│  │ 3. Apply CLAHE (Contrast Limited Adaptive Histogram      │   │
+│  │    Equalization) with clipLimit=2.0, tileGridSize=(8,8)  │   │
+│  │ 4. Merge enhanced L channel with original A, B channels  │   │
+│  │ 5. Convert LAB → BGR                                     │   │
+│  │ 6. Apply sharpening kernel:                              │   │
+│  │    [[-1, -1, -1],                                        │   │
+│  │     [-1,  9, -1],                                        │   │
+│  │     [-1, -1, -1]]                                        │   │
+│  │ 7. Blend: 70% sharpened + 30% enhanced                   │   │
+│  └──────────────────────────────────────────────────────────┘   │
 └────────────────────────────┬────────────────────────────────────┘
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│              MULTI-SCALE OBJECT DETECTION                        │
-│  ┌──────────────────────┐      ┌──────────────────────┐      │
-│  │ Original Frame       │      │ Enhanced Frame        │      │
-│  │ Detection            │      │ Detection             │      │
-│  │ • YOLOv8 Model       │      │ • YOLOv8 Model        │      │
-│  │ • conf_thresh: 0.005 │      │ • conf_thresh: 0.005  │      │
-│  │ • iou_thresh: 0.35   │      │ • iou_thresh: 0.35    │      │
-│  └──────────┬───────────┘      └──────────┬───────────┘      │
-│             │                              │                   │
-│             └──────────┬───────────────────┘                   │
-│                        │                                         │
-│                        ▼                                         │
-│              Merge Detection Results                             │
+│              MULTI-SCALE OBJECT DETECTION                       │
+│  ┌──────────────────────┐      ┌──────────────────────┐         │
+│  │ Original Frame       │      │ Enhanced Frame       │         │
+│  │ Detection            │      │ Detection            │         │
+│  │ • YOLOv8 Model       │      │ • YOLOv8 Model       │         │
+│  │ • conf_thresh: 0.005 │      │ • conf_thresh: 0.005 │         │
+│  │ • iou_thresh: 0.35   │      │ • iou_thresh: 0.35   │         │
+│  └──────────┬───────────┘      └──────────┬───────────┘         │
+│             │                             │                     │
+│             └──────────┬──────────────────┘                     │
+│                        │                                        │
+│                        ▼                                        │
+│              Merge Detection Results                            │
 │              • Combine bounding boxes from both detections      │
-│              • Remove duplicate detections                       │
+│              • Remove duplicate detections                      │
 └────────────────────────────┬────────────────────────────────────┘
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                    DETECTION FILTERING                           │
-│  For each detected bounding box:                                 │
-│  ┌──────────────────────────────────────────────────────────┐ │
-│  │ 1. Extract coordinates: (x1, y1, x2, y2)                   │ │
-│  │ 2. Calculate area: (x2-x1) × (y2-y1)                      │ │
-│  │ 3. Filter by minimum area: area >= 10 pixels               │ │
-│  │ 4. Extract confidence score                                 │ │
-│  │ 5. Calculate centroid: ((x1+x2)/2, (y1+y2)/2)             │ │
-│  │ 6. Calculate aspect ratio: width/height                    │ │
-│  │ 7. Check for duplicates (same bbox coordinates)          │ │
-│  └──────────────────────────────────────────────────────────┘ │
+│                    DETECTION FILTERING                          │
+│  For each detected bounding box:                                │
+│  ┌──────────────────────────────────────────────────────────┐   │
+│  │ 1. Extract coordinates: (x1, y1, x2, y2)                 │   │
+│  │ 2. Calculate area: (x2-x1) × (y2-y1)                     │   │
+│  │ 3. Filter by minimum area: area >= 10 pixels             │   │
+│  │ 4. Extract confidence score                              │   │
+│  │ 5. Calculate centroid: ((x1+x2)/2, (y1+y2)/2)            │   │
+│  │ 6. Calculate aspect ratio: width/height                  │   │
+│  │ 7. Check for duplicates (same bbox coordinates)          │   │
+│  └──────────────────────────────────────────────────────────┘   │
 └────────────────────────────┬────────────────────────────────────┘
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                    BIRD TRACKING                                 │
-│  ┌──────────────────────────────────────────────────────────┐ │
-│  │ BirdTracker.update(detections)                            │ │
-│  │                                                            │ │
-│  │ 1. If no existing tracked objects:                        │ │
-│  │    → Register all detections as new birds                │ │
-│  │                                                            │ │
-│  │ 2. If existing tracked objects:                            │ │
-│  │    a. Compute distance matrix:                            │ │
-│  │       D[i,j] = ||centroid_i - detection_j||              │ │
-│  │    b. Find minimum distance matches                       │ │
-│  │    c. Match if distance < 150 pixels                      │ │
-│  │    d. Update matched objects:                             │ │
-│  │       - Update centroid position                          │ │
-│  │       - Reset disappeared counter                          │ │
-│  │       - Append area and aspect ratio to history          │ │
-│  │    e. Mark unmatched tracked objects as disappeared       │ │
-│  │    f. Register unmatched detections as new birds          │ │
-│  │                                                            │ │
-│  │ 3. Remove objects disappeared > 30 frames                  │ │
-│  └──────────────────────────────────────────────────────────┘ │
+│                    BIRD TRACKING                                │
+│  ┌──────────────────────────────────────────────────────────┐   │
+│  │ BirdTracker.update(detections)                           │   │
+│  │                                                          │   │
+│  │ 1. If no existing tracked objects:                       │   │
+│  │    → Register all detections as new birds                │   │
+│  │                                                          │   │
+│  │ 2. If existing tracked objects:                          │   │
+│  │    a. Compute distance matrix:                           │   │
+│  │       D[i,j] = ||centroid_i - detection_j||              │   │
+│  │    b. Find minimum distance matches                      │   │
+│  │    c. Match if distance < 150 pixels                     │   │
+│  │    d. Update matched objects:                            │   │
+│  │       - Update centroid position                         │   │
+│  │       - Reset disappeared counter                        │   │
+│  │       - Append area and aspect ratio to history          │   │
+│  │    e. Mark unmatched tracked objects as disappeared      │   │
+│  │    f. Register unmatched detections as new birds         │   │
+│  │                                                          │   │
+│  │ 3. Remove objects disappeared > 30 frames                │   │
+│  └──────────────────────────────────────────────────────────┘   │
 └────────────────────────────┬────────────────────────────────────┘
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                    WEIGHT ESTIMATION                             │
+│                    WEIGHT ESTIMATION                            │
 │  For each tracked bird:                                         │
-│  ┌──────────────────────────────────────────────────────────┐ │
-│  │ 1. Calculate average area from tracking history           │ │
-│  │ 2. Calculate average aspect ratio from history            │ │
-│  │ 3. Normalize area: area_score = (area / avg_area) × 50    │ │
-│  │ 4. Calculate aspect score:                                 │ │
-│  │    aspect_score = 50 × (1 - |1 - aspect_ratio|)           │ │
-│  │ 5. Weight index:                                           │ │
-│  │    weight_index = 0.7 × area_score + 0.3 × aspect_score  │ │
-│  │ 6. Clamp to [0, 100] range                                 │ │
-│  └──────────────────────────────────────────────────────────┘ │
+│  ┌──────────────────────────────────────────────────────────┐   │
+│  │ 1. Calculate average area from tracking history          │   │
+│  │ 2. Calculate average aspect ratio from history           │   │
+│  │ 3. Normalize area: area_score = (area / avg_area) × 50   │   │
+│  │ 4. Calculate aspect score:                               │   │
+│  │    aspect_score = 50 × (1 - |1 - aspect_ratio|)          │   │
+│  │ 5. Weight index:                                         │   │
+│  │    weight_index = 0.7 × area_score + 0.3 × aspect_score  │   │
+│  │ 6. Clamp to [0, 100] range                               │   │
+│  └──────────────────────────────────────────────────────────┘   │
 └────────────────────────────┬────────────────────────────────────┘
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                    VIDEO ANNOTATION                              │
-│  For each frame:                                                 │
-│  ┌──────────────────────────────────────────────────────────┐ │
-│  │ 1. Draw green bounding boxes for all detections           │ │
-│  │ 2. Draw confidence scores above boxes                     │ │
-│  │ 3. Draw red centroids for tracked birds                   │ │
-│  │ 4. Draw tracking IDs (ID:0, ID:1, etc.)                  │ │
-│  │ 5. Draw count overlay:                                     │ │
-│  │    - Birds Detected: count of bounding boxes              │ │
-│  │    - Birds Tracked: count of tracked objects              │ │
-│  │    - Timestamp                                             │ │
-│  └──────────────────────────────────────────────────────────┘ │
+│                    VIDEO ANNOTATION                             │
+│  For each frame:                                                │
+│  ┌──────────────────────────────────────────────────────────┐   │
+│  │ 1. Draw green bounding boxes for all detections          │   │
+│  │ 2. Draw confidence scores above boxes                    │   │
+│  │ 3. Draw red centroids for tracked birds                  │   │
+│  │ 4. Draw tracking IDs (ID:0, ID:1, etc.)                  │   │
+│  │ 5. Draw count overlay:                                   │   │
+│  │    - Birds Detected: count of bounding boxes             │   │
+│  │    - Birds Tracked: count of tracked objects             │   │
+│  │    - Timestamp                                           │   │
+│  └──────────────────────────────────────────────────────────┘   │
 └────────────────────────────┬────────────────────────────────────┘
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                    OUTPUT GENERATION                             │
-│  ┌──────────────────────┐      ┌──────────────────────┐      │
-│  │ Annotated Video       │      │ JSON Results          │      │
-│  │ • H.264 MP4 format    │      │ • Detection counts    │      │
-│  │ • Faststart enabled   │      │ • Tracking data       │      │
-│  │ • Frame-by-frame      │      │ • Weight estimates    │      │
-│  │   annotations         │      │ • Metadata            │      │
-│  └──────────────────────┘      └──────────────────────┘      │
+│                    OUTPUT GENERATION                            │
+│  ┌──────────────────────┐      ┌──────────────────────┐         │
+│  │ Annotated Video      │      │ JSON Results         │         │
+│  │ • H.264 MP4 format   │      │ • Detection counts   │         │
+│  │ • Faststart enabled  │      │ • Tracking data      │         │
+│  │ • Frame-by-frame     │      │ • Weight estimates   │         │
+│  │   annotations        │      │ • Metadata           │         │
+│  └──────────────────────┘      └──────────────────────┘         │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
